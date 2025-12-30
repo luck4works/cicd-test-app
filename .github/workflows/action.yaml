@@ -3,7 +3,7 @@ run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [push]
 jobs:
   nestjs-cicd-test:
-    runs-on: arc-runner-set
+    runs-on: gar-listner
     steps:
       - name: Check out repository code
         uses: actions/checkout@v5
