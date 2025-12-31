@@ -39,13 +39,14 @@ jobs:
 
       - name: Update values.yaml
         run: |
-          cd argocd/helm-cicd
+          cd helm-cicd
+          pwd
           sed -i 's|tag: .*|tag: "${{ github.sha }}"|' values.yaml
 
       - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add argocd/helm-cicd/values.yaml
+          git add values.yaml
           git diff --staged --quiet || git commit -m "chore: update image tag to ${{ github.sha }}"
           git push
