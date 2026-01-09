@@ -12,9 +12,6 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v5
 
-      - name: Set up QEMU 
-        uses: docker/setup-qemu-action@v3
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -25,32 +22,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build Container Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          platforms: linux/arm64
+          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Push Image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           platforms: linux/arm64
-          tags: |
-            ghcr.io/${{ github.repository }}:${{ github.sha }}
-
-      - name: Checkout manifest repo
-        uses: actions/checkout@v5
-        with:
-          repository: luck4works/argocd
-          token: ${{ secrets.PAT_TOKEN }}
-          path: argocd
-
-      - name: Update values.yaml
-        run: |
-          cd argocd/helm-cicd
-          yq -i '.image.tag = strenv(GITHUB_SHA)' values.yaml
-
-      - name: Commit and push
-        run: |
-          cd argocd/helm-cicd
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add values.yaml
-          git diff --staged --quiet || git commit -m "chore: update image tag to ${{ github.sha }}"
-          git push
+          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
+          cache-from: type=gha
